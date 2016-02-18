@@ -16,10 +16,16 @@ A plugin to activate plugins and set optons automaticly on new sites
 
 = Filter =
 
+rw_bp_activity_tags_translationpath
 
 
 = Actions =
 
+rw_bp_activity_tags_init
+
+rw_bp_activity_tags_autoload_register
+
+rw_bp_activity_tags_autoload_unregister
 
 
 == Defines ==
