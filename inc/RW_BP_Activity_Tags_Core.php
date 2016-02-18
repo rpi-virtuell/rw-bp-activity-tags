@@ -41,7 +41,7 @@ class RW_BP_Activity_Tags_Core {
     //   var_dump( get_terms( 'activity_tags', $args = '' ) );
     //   var_dump( wp_get_object_terms( bp_get_activity_id(), 'activity_tags', $args = array()) );
        ?>
-       <div class='activity-content activity-tag-list'>
+       <div class='activity-content activity-tag-list activity-tag-list-<?php echo bp_get_activity_id();?>'>
        <?php foreach ( wp_get_object_terms( bp_get_activity_id(), 'activity_tags' ) as $term ) { ?>
 
         <a href="#" class="fa fa-tag activity-tag"><?php echo $term->name; ?></a>
@@ -52,24 +52,37 @@ class RW_BP_Activity_Tags_Core {
    }
 
     function add_tag_activity() {
-        $nonce = isset($_REQUEST['data-post-nonces']) ? sanitize_text_field($_REQUEST['nonces']) : 0;
-        if (!wp_verify_nonce($nonce, 'tag-activity-nonce')) {
-            exit(__('Not permitted', RW_Sticky_Activity::$textdomain));
+        $nonce = isset($_REQUEST['data-post-nonces']) ? sanitize_text_field($_REQUEST['data-post-nonces']) : 0;
+        if (! wp_verify_nonce( $nonce, 'tag-activity-nonce' ) ) {
+            exit( __( 'Not permitted', RW_BP_Activity_Tags::$textdomain ) );
         }
-        $activityID = (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])) ? $_REQUEST['id'] : '';
-        if ($activityID != '') {
-            //bp_activity_update_meta($activityID, 'rw_sticky_activity', 1);
-
+        $activityID = ( isset( $_REQUEST['data-post-id' ] ) && is_numeric( $_REQUEST[ 'data-post-id' ] ) ) ? $_REQUEST[ 'data-post-id' ] : '';
+        $tags =  isset( $_REQUEST[ 'data-post-tags' ] ) ? sanitize_text_field($_REQUEST[ 'data-post-tags' ] ) : '';
+        if ($activityID != '' &&  $tags != '') {
+            $tagarray = explode( ',', $tags );
+            foreach ( $tagarray as $tag ) {
+                if (! term_exists( sanitize_title( $tag), 'activity_tags' ) ) {
+                    wp_insert_term( sanitize_title( $tag), 'activity_tags'  );
+                }
+                $termID = term_exists( sanitize_title( $tag), 'activity_tags' );
+                $term = get_term_by('id', $termID['term_id'], 'activity_tags');
+                wp_set_object_terms( $activityID, $term->term_id, 'activity_tags', true );
+            }
         }
-        echo "hier";
-
+        ?>
+            <?php foreach ( wp_get_object_terms( $activityID, 'activity_tags' ) as $term ) { ?>
+                <a href="#" class="fa fa-tag activity-tag"><?php echo $term->name; ?></a>
+            <?php } ?>
+        <?php
         wp_die();
     }
 
     function write_dialog() {
         ?>
         <div id="dialog" title="Add Activity Tag">
-            <p>This is the default dialog which is useful for displaying information. The <a href="#" class="adas">dialog window</a> can be moved, resized and closed with the 'x' icon.</p>
+            <?php _e( 'Enter tags for the activity', RW_BP_Activity_Tags::$textdomain ); ?><br>
+                <form>
+            <input type="text" name="tags" class="data-post-tags"><div style="float: right;" class="adas fa">ok</div> </form>
         </div>
         <?php
     }

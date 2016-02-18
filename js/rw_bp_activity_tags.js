@@ -11,28 +11,26 @@ jQuery(document).ready(function($) {
             position: { my: "center", at: "center", of: "#activity-stream" },
             modal: true
         });
+
+        return false;
     });
 
     jQuery(document).on('click', '.adas', function () {
-alert("1");
         var button = $(".adas");
         button.addClass( 'loading');
+        var tags = $(".data-post-tags").val();
         var data = {
             'action': 'add_tag_activity',
             'data-post-nonces' : data_post_nonces,
-            'data-post-id' :data_post_id
+            'data-post-id' :data_post_id,
+            'data-post-tags' :  tags
         };
-        alert("2");
 
         jQuery.post("/wp-admin/admin-ajax.php", data, function (response) {
-
-//            button.removeClass('loading');
-//            button.removeClass('notpinned');
-//            button.addClass('pinned');
-//            $("div.buddypress-sa").remove();
-//            $(".activity-tag-list").append( response );
-            alert("3");
-//            $("div#group-description div.widget_sticky_acivity").append( response );
+            $(".activity-tag-list-"+data_post_id).empty();
+            $(".activity-tag-list-"+data_post_id).append( response );
+            $(".data-post-tags").val('');
+            $( "#dialog" ).dialog( "close" );
         });
         return false;
     });
